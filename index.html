@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webvr - cubes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<!-- Origin Trial Token, feature = WebVR (For Chrome M59+), origin = https://threejs.org, expires = 2017-07-28 -->
+		<meta http-equiv="origin-trial" data-feature="WebVR (For Chrome M59+)" data-expires="2017-07-28" content="Ave6CPNUgSwHb3vCbyd55P/R7pfkwNniUJsYfSoUqI+l1X1BIOt6HfriVP0g2hmaG7Pp3qaUXuXdZeqGBmoMKg8AAABNeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJWUjEuMSIsImV4cGlyeSI6MTUwMTI2NzQwNX0=">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #101010;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			a {
+				color: #f00;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="three.js"></script>
+
+		<script src="WebVR.js"></script>
+
+		<script>
+
+			WEBVR.checkAvailability().catch( function( message ) {
+
+				document.body.appendChild( WEBVR.getMessageContainer( message ) );
+
+			} );
+
+			var loader = new THREE.TextureLoader();
+
+			var container;
+			var camera, scene, renderer;
+
+			var room;
+
+			function loadCubes(){
+				var aTexture = loader.load('a.png');
+				var bTexture = loader.load('b.png');
+
+				var geo = new THREE.CubeGeometry(0.25,0.25,0.25,1,1,1);
+				var aCube = new THREE.Mesh( geo, new THREE.MeshLambertMaterial({
+					map: aTexture
+				}));
+
+				aCube.position.set( 0.5, 0, 0 );
+
+				var bCube = new THREE.Mesh( geo, new THREE.MeshLambertMaterial({
+					map: bTexture
+				}));
+
+				aCube.position.set( -0.5, 0, 0 );
+
+				scene.add( aCube, bCube );
+			}
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 10 );
+				scene.add( camera );
+
+				room = new THREE.Mesh(
+					new THREE.BoxGeometry( 6, 6, 6, 8, 8, 8 ),
+					new THREE.MeshBasicMaterial( { color: 0x404040, wireframe: true } )
+				);
+				scene.add( room );
+
+				loadCubes();
+
+				scene.add( new THREE.HemisphereLight( 0x606060, 0x404040 ) );
+
+				var light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 1, 1, 1 ).normalize();
+				scene.add( light );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0x505050 );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false;
+				container.appendChild( renderer.domElement );
+
+				renderer.vr.enabled = true;
+				WEBVR.getVRDisplay( function ( display ) {
+					renderer.vr.setDevice( display );
+
+					document.body.appendChild( WEBVR.getButton( display, renderer.domElement ) );
+
+				} );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function animate() {
+				renderer.animate( render );
+			}
+
+			function render() {
+				renderer.vr.enabled = true;
+				renderer.render( scene, camera );
+
+				//	render again to monoscopic view
+				var size = renderer.getSize();
+				var ratio = renderer.getPixelRatio();
+				renderer.setDrawingBufferSize( size.width, size.height, ratio );
+
+				renderer.vr.enabled = false;
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>

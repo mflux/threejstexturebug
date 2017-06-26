@@ -49,13 +49,13 @@
 					map: aTexture
 				}));
 
-				aCube.position.set( 0.5, 0, 0 );
+				aCube.position.set( 0.25, -0.5, 0 );
 
 				var bCube = new THREE.Mesh( geo, new THREE.MeshLambertMaterial({
 					map: bTexture
 				}));
 
-				aCube.position.set( -0.5, 0, 0 );
+				bCube.position.set( -0.25, -0.5, 0 );
 
 				scene.add( aCube, bCube );
 			}
